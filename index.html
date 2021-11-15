@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        h1 {
+            text-align: center;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        h3 {
+            text-align: center;
+        }
+
+        h4 {
+            text-align: center;
+        }
+
+        body {
+            margin: auto;
+            width: 85%;
+        }
+
+        .row {
+            display: flex;
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .column {
+            display: inline-block;
+        }
+
+        td {
+            text-align: center;
+        }
+
+        table {
+            margin: auto;
+        }
+    </style>
+    <title>Filters and Frequencies</title>
+</head>
+
+
+<body>
+    <h1>Filters and Frequencies</h1>
+    <h4>Roth Yin | rothyin@berkeley.edu</h4>
+
+    <h2>Part 1.1: Finite Difference Operator</h2>
+    <p>Partial derivatives: Separately calculate the partial derivatives in x and y direction, which is to convolve the
+        image with the given finite difference vectors.
+    <ul>
+        <li>Because we want to utilize <code>scipy.signal.convolve2d</code>, we want to first turn the given finite
+            difference vectors into 2-d matrices. So the finite differences we use are [[1, -1]] and [[1], [-1]].</li>
+    </ul>
+    </p>
+    <p>Gradient magnitude: For each point, this is the length of the vector whose components are the two partial
+        derivatives at this point as calculated above, which can be calculated as (&part;<sub>x</sub><sup>2</sup>
+        + &part;<sub>y</sub><sup>2</sup>)<sup><sup>1</sup>/<sub>2</sub></sup>
+    </p>
+
+    <div class="row">
+        <div class="column">
+            <img src="part1/cameraman.png" alt="cameraman" width=95%>
+            <figcaption>Original</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="part1/1.1.pdx.jpg" alt="D_x" width=95%>
+            <figcaption>Partial Derivative in x</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="part1/1.1.pdy.jpg" alt="D_y" width=95%>
+            <figcaption>Partial Derivative in y</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="part1/1.1.grad_mag.jpg" alt="gradient magnitude" width=95%>
+            <figcaption>Gradient Magnitude</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="part1/edge.jpg" alt="Edge image with threshold 0.23" width=95%>
+            <figcaption>Edge Image with Threshold 0.23 (without losing the tripod leg)</figcaption>
+        </div>
+    </div>
+
+    <br>
+    <br>
+
+    <h2>Part 1.2: Derivative of Gaussian (DoG) Filter</h2>
+    <p>
+        The following outputs are with the same method as above, except that the original image is blurred with Gaussian
+        first. Differences after applying Gaussian filter:
+    <ul>
+        <li>
+            The edges are smoother. It makes sense because the Gaussian blurs the image.
+        </li>
+        <li>
+            The color contrast is lower (white is not as white; gradient magnitude is darker). It makes sense because
+            the Gaussian blurs the image, so
+            the color changes are not as strong.
+        </li>
+        <li>
+            There are less noise, especially in the gradient magnitude image. It makes sense because the Gaussian blurs
+            takes away some small changes that are noise.
+        </li>
+    </ul>
+    </p>
+
+    <p>
+        The output with the Gaussian filter:
+    </p>
+
+    <div class="row">
+        <div class="column">
+            <img src="part1/1.2.pdx.jpg" alt="pdx" width=60%>
+            <figcaption>Partial Derivative in x</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="part1/1.2.pdy.jpg" alt="pdy" width=60%>
+            <figcaption>Partial Derivative in y</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="part1/1.2.grad_mag.jpg" alt="grad_mag" width=60%>
+            <figcaption>Gradient Magnitude</figcaption>
+        </div>
+    </div>
+
+    <p>
+        The DoG filters (Gaussian blur of the partial derivatives):
+    </p>
+
+    <div class="row">
+        <div class="column">
+            <img src="part1/1.2.dogx.jpg" alt="dogx" width=95%>
+            <figcaption>DoG in x</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="part1/1.2.dogy.jpg" alt="dogy" width=95%>
+            <figcaption>DoG in y</figcaption>
+        </div>
+    </div>
+
+    <p>
+        A single convolution with the DoG filters results in the same images as two convolutions above. These are shown
+        below:
+    </p>
+
+    <div class="row">
+        <div class="column">
+            <img src="part1/1.2.pdx2.jpg" alt="dogx2" width=60%>
+            <figcaption>Partial Derivative in x</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="part1/1.2.pdy2.jpg" alt="dogy2" width=60%>
+            <figcaption>Partial Derivative in y</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="part1/1.2.grad_magg2.jpg" alt="grad_magg2" width=60%>
+            <figcaption>Gradient Magnitude</figcaption>
+        </div>
+    </div>
+
+    <br>
+    <br>
+
+    <h2>Part 2.1: Image "Sharpening"</h2>
+    <p>
+        The following images are processed with unsharp masking.
+    <ul>
+        <li>First blur the image with Gaussian to get the low frequencies.</li>
+        <li>Subtract the low frequencies from the original image to get the high frequencies.</li>
+        <li>Amplify the high frequencies in the original image to make it look sharp.</li>
+    </ul>
+    </p>
+    <div class="row">
+        <div class="column">
+            <img src="2.1/taj.jpg" alt="taj" width=90%>
+            <figcaption>Original Taj</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.1/2.1.taj.jpg" alt="taj_sharpened" width=90%>
+            <figcaption>Sharpened Taj</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.1/church.jpg" alt="church" width=90%>
+            <figcaption>Original Church</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.1/2.1.church.jpg" alt="church_shaprpened" width=90%>
+            <figcaption>Sharpened Church</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.1/south.jfif" alt="south" width=90%>
+            <figcaption>Original South Hall</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.1/2.1.south.jpg" alt="south_shaprpened" width=90%>
+            <figcaption>Sharpened South Hall</figcaption>
+        </div>
+    </div>
+
+    <p>
+        The following sharp image is blurred, and resharpened with the technique above. Though the image in small scale
+        looks similar, upon close inspections, the fine details with high frequencies (the hair and winkles on the face)
+        are lost, which is inevitable after Gaussian blur, and the image in general is over contrasted in the attempt to
+        look sharp. Though unsharp masking can "sharpen" the image to some extent, it cannot revert ablurred image back
+        to its sharp state.
+    </p>
+
+    <div class="row">
+        <div class="column">
+            <img src="2.1/monkey.jpg" alt="monkey" width=40%>
+            <figcaption>Original Monkey</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.1/2.1.monkey.jpg" alt="monkey_sharpened" width=40%>
+            <figcaption>Blurred and Resharpened Monkey</figcaption>
+        </div>
+    </div>
+
+    <br>
+    <br>
+
+    <h2>Part 2.2: Hybrid Images</h2>
+    <p>The hybrid images are produced with the following techniques.
+    <ul>
+        <li>Gaussian blur Image 1 to get the low frequencies of Image 1.</li>
+        <li>Subtract the Gaussian blur of Image 2 from the original to get the high frequencies of Image 2.</li>
+        <li>Combine the above two.</li>
+    </ul>
+    </p>
+    <p>Example 1:</p>
+    <div class="row">
+        <div class="column">
+            <img src="2.2.mouth/im1a.jpg" alt="close" width=90%>
+            <figcaption>Bearded Mouth Closed</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.2.mouth/im2a.jpg" alt="smile" width=90%>
+            <figcaption>Beardless Mouth Open</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.2.mouth/blur.jpg" alt="blurred" width=90%>
+            <figcaption>Blurred Bearded Mouth Closed</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.2.mouth/sharpened.jpg" alt="sharpened" width=90%>
+            <figcaption>Sharpened Beardless Mouth Open</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.2.mouth/mono.jpg" alt="mouth hybrid" width=90%>
+            <figcaption>Mouth Hybrid</figcaption>
+        </div>
+    </div>
+
+    <p>
+    <ul>
+        <li>Frequency analysis of the above transformation:</li>
+    </ul>
+    </p>
+
+    <div class="row">
+        <div class="column">
+            <img src="2.2.mouth/fim1.jpg" alt="close" width=90%>
+            <figcaption>Bearded Mouth Closed</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.2.mouth/fim2.jpg" alt="smile" width=90%>
+            <figcaption>Beardless Mouth Open</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.2.mouth/fim1f.jpg" alt="blurred" width=90%>
+            <figcaption>Blurred Bearded Mouth Closed</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.2.mouth/fim2f.jpg" alt="sharpened" width=90%>
+            <figcaption>Sharpened Beardless Mouth Open</figcaption>
+        </div>
+
+        <div class="column">
+            <img src="2.2.mouth/fhybrid.jpg" alt="mouth hybrid" width=90%>
+            <figcaption>Mouth Hybrid</figcaption>
+        </div>
+    </div>
+
+    <p>More examples:</p>
+
+    <div class="row">
+        <div class="column">
+            <figcaption>Original</figcaption>
+            <img src="2.2.round/im1a.jpg" alt="flower" width=20%>
+            <img src="2.2.round/im2a.jpg" alt="fan" width=20%>
+        </div>
+
+        <div class="column">
+            <figcaption>Hybrid</figcaption>
+            <img src="2.2.round/mono.jpg" alt="mouth hybrid" width=40%>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="column">
+            <img src="2.2.plaza/im1a.jpg" alt="debris" width=30%>
+            <img src="2.2.plaza/im2a.jpg" alt="prosperity" width=30%>
+        </div>
+
+        <div class="column">
+            <img src="2.2.plaza/mono.jpg" alt="hybrid" width=50%>
+        </div>
+    </div>
+
+    <p>
+        Failed example: It fails because the shapes do not really match up, and the leaves are too different from each
+        other. If the apple is blurred more it might be better.
+    </p>
+
+    <div class="row">
+        <div class="column">
+            <img src="2.2.fail/im2a.jpg" alt="apple" width=20%>
+            <img src="2.2.fail/im1a.jpg" alt="berry" width=20%>
+        </div>
+
+        <div class="column">
+            <img src="2.2.fail/mono.jpg" alt="hybrid" width=50%>
+        </div>
+    </div>
+
+    <br>
+    <br>
+
+    <h3>
+        <span style="color: red">
+            Bells & Whistles (Extra Points) 1/4
+        </span>
+    </h3>
+
+    <p>Apply the process for gray-scaled images (described above in Part 2.2) to each channel of the color image.
+        Combine the channels in the end.</p>
+    <p>The specific use of colors to enhance the effect depends on the specific images used. For example, the fan is by
+        itself black and white, so the comparison below does not generate very meaningful results. But in general, the
+        colored high frequencies and non-colored low frequencies give the best results.
+    <ul>
+        <li>If both high and low frequencies do not have color, sometimes it gets too dark and messy with all the black
+            lines.
+        </li>
+        <li>If both are colored, sometimes it does not provide enough contrast between the frequencies.</li>
+        <li>Colors in high frequencies sometimes help see the details of the images, whereas the low frequencies only
+            need to be recognized as a general shape, so the color here is not too important.</li>
+    </ul>
+    </p>
+
+    <table>
+        <tr>
+            <th>No Color</th>
+            <th>Colored High frequency</th>
+            <th>Colored Low frequency</th>
+            <th>Full Color</th>
+        </tr>
+        <tr>
+            <td><img src="2.2.mouth/mono.jpg" alt="mono" width=60%></td>
+            <td><img src="2.2.mouth/bw_cn_clip.jpg" alt="cn" width=60%></td>
+            <td><img src="2.2.mouth/bw_nc_clip.jpg" alt="nc" width=60%></td>
+            <td><img src="2.2.mouth/bw_cc_clip.jpg" alt="cc" width=60%></td>
+        </tr>
+        <tr>
+            <td><img src="2.2.round/mono.jpg" alt="mono" width=50%></td>
+            <td><img src="2.2.round/bw_cn_clip.jpg" alt="cn" width=50%></td>
+            <td><img src="2.2.round/bw_nc_clip.jpg" alt="nc" width=50%></td>
+            <td><img src="2.2.round/bw_cc_clip.jpg" alt="cc" width=50%></td>
+        </tr>
+        <tr>
+            <td><img src="2.2.plaza/mono.jpg" alt="mono" width=70%></td>
+            <td><img src="2.2.plaza/bw_cn_clip.jpg" alt="cn" width=70%></td>
+            <td><img src="2.2.plaza/bw_nc_clip.jpg" alt="nc" width=70%></td>
+            <td><img src="2.2.plaza/bw_cc_clip.jpg" alt="cc" width=70%></td>
+        </tr>
+    </table>
+
+    <br>
+    <br>
+
+    <h2>Part 2.3: Gaussian and Laplacian Stacks</h2>
+    <p>Gaussian stack:
+    <ul>
+        <li>The first layer is the original image.</li>
+        <li>Blur the image recursively multiple times. Each blur is one layer of Gaussian stack.</li>
+    </ul>
+    </p>
+    <p>Laplacian stack:
+    <ul>
+        <li>The difference between two adjacent layers of Gaussian stack is a layer of Laplacian stack. This is a band
+            of frequencies of the original image.</li>
+        <li>The last layer is the last layer of Gaussian stack, so that the stack has all the information of the
+            original image.</li>
+    </ul>
+    </p>
+    <p>Mask: The following Oraple is done with the regular mask. The left half is all 1 and the right half is all 0 for
+        the apple. Reversed for the orange.
+    </p>
+    <p>Multiresolution blending:
+    <ul>
+        <li>Create Gaussian stacks for the mask.</li>
+        <li>Create Laplacian stack for the input images.</li>
+        <li>Apply the layers of the masks to the layers of the Laplacian stacks, correspondingly.</li>
+        <li>At each layer, combine the Laplacian stacks of the input images.</li>
+        <li>Combine all layers.</li>
+    </ul>
+    </p>
+    <p>The following set of images show layers of the Laplacian stacks and the final combined images.</p>
+    <table>
+        <tr>
+            <td><img src="2.3gray/1-0.jpg" alt="1-0" width=50%></td>
+            <td><img src="2.3gray/2-0.jpg" alt="2-0" width=50%></td>
+            <td><img src="2.3gray/3-0.jpg" alt="3-0" width=50%></td>
+        </tr>
+        <tr>
+            <td><img src="2.3gray/1-1.jpg" alt="1-1" width=50%></td>
+            <td><img src="2.3gray/2-1.jpg" alt="2-1" width=50%></td>
+            <td><img src="2.3gray/3-1.jpg" alt="3-1" width=50%></td>
+        </tr>
+        <tr>
+            <td><img src="2.3gray/1-2.jpg" alt="1-2" width=50%></td>
+            <td><img src="2.3gray/2-2.jpg" alt="2-2" width=50%></td>
+            <td><img src="2.3gray/3-2.jpg" alt="3-2" width=50%></td>
+        </tr>
+        <tr>
+            <td><img src="2.3gray/1-c.jpg" alt="1-c" width=50%></td>
+            <td><img src="2.3gray/2-c.jpg" alt="2-c" width=50%></td>
+            <td><img src="2.3gray/3-c.jpg" alt="3-c" width=50%></td>
+        </tr>
+    </table>
+
+    <br>
+    <br>
+
+    <h2>Part 2.4: Multiresolution Blending</h2>
+    <p>Process is described above in Part 2.3.</p>
+    <p>Regular masking (as in Part 2.3):</p>
+    <table>
+        <tr>
+            <td><img src="2.4gray/1-0.jpg" alt="1-0" width=40%></td>
+            <td><img src="2.4gray/2-0.jpg" alt="2-0" width=40%></td>
+            <td><img src="2.4gray/3-0.jpg" alt="3-0" width=40%></td>
+        </tr>
+        <tr>
+            <td><img src="2.4gray/1-1.jpg" alt="1-1" width=40%></td>
+            <td><img src="2.4gray/2-1.jpg" alt="2-1" width=40%></td>
+            <td><img src="2.4gray/3-1.jpg" alt="3-1" width=40%></td>
+        </tr>
+        <tr>
+            <td><img src="2.4gray/1-2.jpg" alt="1-2" width=40%></td>
+            <td><img src="2.4gray/2-2.jpg" alt="2-2" width=40%></td>
+            <td><img src="2.4gray/3-2.jpg" alt="3-2" width=40%></td>
+        </tr>
+        <tr>
+            <td><img src="2.4gray/1-c.jpg" alt="1-c" width=40%></td>
+            <td><img src="2.4gray/2-c.jpg" alt="2-c" width=40%></td>
+            <td><img src="2.4gray/3-c.jpg" alt="3-c" width=40%></td>
+        </tr>
+    </table>
+
+    <p>Irregular masking: </p>
+    <p>Mask: The eye region is active for the eye image. Reversed for the face.</p>
+    <p>This blending is not ideal, and has more nuance to it. See its color counterpart for more information.</p>
+    <table>
+        <tr>
+            <td><img src="2.4irregular_gray/1-0.jpg" alt="1-0" width=90%></td>
+            <td><img src="2.4irregular_gray/2-0.jpg" alt="2-0" width=90%></td>
+            <td><img src="2.4irregular_gray/3-0.jpg" alt="3-0" width=90%></td>
+        </tr>
+        <tr>
+            <td><img src="2.4irregular_gray/1-1.jpg" alt="1-1" width=90%></td>
+            <td><img src="2.4irregular_gray/2-1.jpg" alt="2-1" width=90%></td>
+            <td><img src="2.4irregular_gray/3-1.jpg" alt="3-1" width=90%></td>
+        </tr>
+        <tr>
+            <td><img src="2.4irregular_gray/1-2.jpg" alt="1-2" width=90%></td>
+            <td><img src="2.4irregular_gray/2-2.jpg" alt="2-2" width=90%></td>
+            <td><img src="2.4irregular_gray/3-2.jpg" alt="3-2" width=90%></td>
+        </tr>
+        <tr>
+            <td><img src="2.4irregular_gray/1-c.jpg" alt="1-c" width=90%></td>
+            <td><img src="2.4irregular_gray/2-c.jpg" alt="2-c" width=90%></td>
+            <td><img src="2.4irregular_gray/3-c.jpg" alt="3-c" width=90%></td>
+        </tr>
+    </table>
+    <br>
+    <p>Mask: The robot hand is active for the robot hand image. Reversed for the human hand.</p>
+    <p>This blending is not ideal, and has more nuance to it. See Bells & Whistles (Extra Points) 4/4 for more
+        information.</p>
+    <table>
+        <tr>
+            <td><img src="hand_gray/1-0.jpg" alt="1-0" width=70%></td>
+            <td><img src="hand_gray/2-0.jpg" alt="2-0" width=70%></td>
+            <td><img src="hand_gray/3-0.jpg" alt="3-0" width=70%></td>
+        </tr>
+        <tr>
+            <td><img src="hand_gray/1-1.jpg" alt="1-1" width=70%></td>
+            <td><img src="hand_gray/2-1.jpg" alt="2-1" width=70%></td>
+            <td><img src="hand_gray/3-1.jpg" alt="3-1" width=70%></td>
+        </tr>
+        <tr>
+            <td><img src="hand_gray/1-2.jpg" alt="1-2" width=70%></td>
+            <td><img src="hand_gray/2-2.jpg" alt="2-2" width=70%></td>
+            <td><img src="hand_gray/3-2.jpg" alt="3-2" width=70%></td>
+        </tr>
+        <tr>
+            <td><img src="hand_gray/1-c.jpg" alt="1-c" width=70%></td>
+            <td><img src="hand_gray/2-c.jpg" alt="2-c" width=70%></td>
+            <td><img src="hand_gray/3-c.jpg" alt="3-c" width=70%></td>
+        </tr>
+    </table>
+
+    <br>
+    <br>
+
+    <h3>
+        <span style="color: red">
+            Bells & Whistles (Extra Points) 2/4
+        </span>
+    </h3>
+
+    <p>Colored multiresolution blending: Apply the process for gray-scaled images (described above in Part 2.3) to each
+        channel of the color image. Combine the channels in the end.
+    </p>
+
+    <table>
+        <tr>
+            <td><img src="2.3/1-0.jpg" alt="1-0" width=50%></td>
+            <td><img src="2.3/2-0.jpg" alt="2-0" width=50%></td>
+            <td><img src="2.3/3-0.jpg" alt="3-0" width=50%></td>
+        </tr>
+        <tr>
+            <td><img src="2.3/1-1.jpg" alt="1-1" width=50%></td>
+            <td><img src="2.3/2-1.jpg" alt="2-1" width=50%></td>
+            <td><img src="2.3/3-1.jpg" alt="3-1" width=50%></td>
+        </tr>
+        <tr>
+            <td><img src="2.3/1-2.jpg" alt="1-2" width=50%></td>
+            <td><img src="2.3/2-2.jpg" alt="2-2" width=50%></td>
+            <td><img src="2.3/3-2.jpg" alt="3-2" width=50%></td>
+        </tr>
+        <tr>
+            <td><img src="2.3/1-c.jpg" alt="1-c" width=50%></td>
+            <td><img src="2.3/2-c.jpg" alt="2-c" width=50%></td>
+            <td><img src="2.3/3-c.jpg" alt="3-c" width=50%></td>
+        </tr>
+    </table>
+    <br>
+    <table>
+        <tr>
+            <td><img src="2.4/1-0.jpg" alt="1-0" width=40%></td>
+            <td><img src="2.4/2-0.jpg" alt="2-0" width=40%></td>
+            <td><img src="2.4/3-0.jpg" alt="3-0" width=40%></td>
+        </tr>
+        <tr>
+            <td><img src="2.4/1-1.jpg" alt="1-1" width=40%></td>
+            <td><img src="2.4/2-1.jpg" alt="2-1" width=40%></td>
+            <td><img src="2.4/3-1.jpg" alt="3-1" width=40%></td>
+        </tr>
+        <tr>
+            <td><img src="2.4/1-2.jpg" alt="1-2" width=40%></td>
+            <td><img src="2.4/2-2.jpg" alt="2-2" width=40%></td>
+            <td><img src="2.4/3-2.jpg" alt="3-2" width=40%></td>
+        </tr>
+        <tr>
+            <td><img src="2.4/1-c.jpg" alt="1-c" width=40%></td>
+            <td><img src="2.4/2-c.jpg" alt="2-c" width=40%></td>
+            <td><img src="2.4/3-c.jpg" alt="3-c" width=40%></td>
+        </tr>
+    </table>
+    <br>
+    <p>This blending is not ideal, and has more nuance to it. See Bells & Whistles (Extra Points) 4/4 for more
+        information.</p>
+    <table>
+        <tr>
+            <td><img src="aura/1-0.jpg" alt="1-0" width=70%></td>
+            <td><img src="aura/2-0.jpg" alt="2-0" width=70%></td>
+            <td><img src="aura/3-0.jpg" alt="3-0" width=70%></td>
+        </tr>
+        <tr>
+            <td><img src="aura/1-1.jpg" alt="1-1" width=70%></td>
+            <td><img src="aura/2-1.jpg" alt="2-1" width=70%></td>
+            <td><img src="aura/3-1.jpg" alt="3-1" width=70%></td>
+        </tr>
+        <tr>
+            <td><img src="aura/1-2.jpg" alt="1-2" width=70%></td>
+            <td><img src="aura/2-2.jpg" alt="2-2" width=70%></td>
+            <td><img src="aura/3-2.jpg" alt="3-2" width=70%></td>
+        </tr>
+        <tr>
+            <td><img src="aura/1-c.jpg" alt="1-c" width=70%></td>
+            <td><img src="aura/2-c.jpg" alt="2-c" width=70%></td>
+            <td><img src="aura/3-c.jpg" alt="3-c" width=70%></td>
+        </tr>
+    </table>
+
+    <br>
+    <br>
+
+    <h3>
+        <span style="color: red">
+            Bells & Whistles (Extra Points) 3/4
+        </span>
+    </h3>
+    <p>The gaze case is special. Because the eyes are taken from comics, it does not have the natural and sophisticated
+        change of color as real images. We only want the red channel to be blended.
+    <ul>
+        <li>This means the mask is only applied to the red channel.</li>
+        <li>The blending of the face does not have "holes" in his eye region as in the gray-scaled version, because here
+            only one channel is masked away, whereas in gray scale the color channels are indistinguishable.</li>
+        <li>This blending is significantly better in color for the above reason.</li>
+    </ul>
+    </p>
+    <table>
+        <tr>
+            <td><img src="2.4irregular/1-0.jpg" alt="1-0" width=90%></td>
+            <td><img src="2.4irregular/2-0.jpg" alt="2-0" width=90%></td>
+            <td><img src="2.4irregular/3-0.jpg" alt="3-0" width=90%></td>
+        </tr>
+        <tr>
+            <td><img src="2.4irregular/1-1.jpg" alt="1-1" width=90%></td>
+            <td><img src="2.4irregular/2-1.jpg" alt="2-1" width=90%></td>
+            <td><img src="2.4irregular/3-1.jpg" alt="3-1" width=90%></td>
+        </tr>
+        <tr>
+            <td><img src="2.4irregular/1-2.jpg" alt="1-2" width=90%></td>
+            <td><img src="2.4irregular/2-2.jpg" alt="2-2" width=90%></td>
+            <td><img src="2.4irregular/3-2.jpg" alt="3-2" width=90%></td>
+        </tr>
+        <tr>
+            <td><img src="2.4irregular/1-c.jpg" alt="1-c" width=90%></td>
+            <td><img src="2.4irregular/2-c.jpg" alt="2-c" width=90%></td>
+            <td><img src="2.4irregular/3-c.jpg" alt="3-c" width=90%></td>
+        </tr>
+    </table>
+
+    <br>
+    <br>
+
+    <h3>
+        <span style="color: red">
+            Bells & Whistles (Extra Points) 4/4
+        </span>
+    </h3>
+
+    <p>In the last example above (hand shaking), the regular technique results in aura around the robot hand. This is
+        because the white background gets considered when doing Gaussian blending.</p>
+    <p>A solution I found was to fill the background with the color of the skin, so that the Gaussian blending will only
+        blend the actual color (the skin color) as desired.</p>
+    <p>This is achieved by first recognizing the region that is not background (with color threshold), and average the
+        rest of the active regions' colors. Then fill the background with that color.</p>
+
+    <table>
+        <tr>
+            <td><img src="skincolor/1-0.jpg" alt="1-0" width=70%></td>
+            <td><img src="skincolor/2-0.jpg" alt="2-0" width=70%></td>
+            <td><img src="skincolor/3-0.jpg" alt="3-0" width=70%></td>
+        </tr>
+        <tr>
+            <td><img src="skincolor/1-1.jpg" alt="1-1" width=70%></td>
+            <td><img src="skincolor/2-1.jpg" alt="2-1" width=70%></td>
+            <td><img src="skincolor/3-1.jpg" alt="3-1" width=70%></td>
+        </tr>
+        <tr>
+            <td><img src="skincolor/1-2.jpg" alt="1-2" width=70%></td>
+            <td><img src="skincolor/2-2.jpg" alt="2-2" width=70%></td>
+            <td><img src="skincolor/3-2.jpg" alt="3-2" width=70%></td>
+        </tr>
+        <tr>
+            <td><img src="skincolor/1-c.jpg" alt="1-c" width=70%></td>
+            <td><img src="skincolor/2-c.jpg" alt="2-c" width=70%></td>
+            <td><img src="skincolor/3-c.jpg" alt="3-c" width=70%></td>
+        </tr>
+    </table>
+
+    <br>
+    <br>
+
+    <h3>Reflection</h3>
+    <p>All these results are based on the knowledge of human perception, which is not achievable solely with
+        Computer Science. In addition to the technical details of this project, it emphasizes the power and significance
+        of the interdisciplinary thinking and applications that I should constantly be aware of.</p>
+
+    <br>
+    <br>
+
+    <p><small>All images are from open online search.</small></p>
+
+</body>
+
+</html>
